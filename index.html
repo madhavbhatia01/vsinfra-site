@@ -74,6 +74,102 @@
             border-radius: 2px;
         }
 
+        /* --- CUSTOM ALERT STYLES --- */
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 52, 54, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-alert-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-alert {
+            background: var(--surface);
+            padding: 2.5rem 2rem;
+            box-shadow: 8px 8px 24px var(--shadow-dark), 
+                        -8px -8px 24px var(--shadow-light);
+            border-radius: 4px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .custom-alert-overlay.active .custom-alert {
+            transform: translateY(0) scale(1);
+        }
+
+        .alert-icon {
+            width: 60px;
+            height: 60px;
+            background: #e8e9ed; /* match surface */
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-icon svg {
+            width: 30px;
+            height: 30px;
+            stroke: #2d3436;
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .alert-title {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .alert-msg {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 1rem;
+        }
+
+        .alert-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--text-main);
+            color: #fff;
+            border: none;
+            text-transform: uppercase;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .alert-btn:hover {
+            transform: scale(1.02);
+        }
+
         header {
             padding: 1rem 5%;
             display: flex;
@@ -82,17 +178,16 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(232, 233, 237, 0.85); 
+            /* RESTORING BACKGROUND FOR VISIBILITY */
+            background: rgba(232, 233, 237, 0.9);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* Updated Logo CSS for Image */
         .logo {
-            height: 50px; /* Sets a consistent height for the logo */
-            width: auto;  /* Maintains aspect ratio */
+            height: 50px;
+            width: auto;  
             object-fit: contain;
-            /* Font properties below are ignored by images but kept if you revert to text */
             font-family: 'DM Sans', sans-serif;
             font-weight: 700;
             letter-spacing: -0.5px; 
@@ -109,6 +204,9 @@
             text-transform: uppercase;
             letter-spacing: 0px; 
             transition: all 0.3s ease;
+            background: rgba(232, 233, 237, 0.9);
+            backdrop-filter: blur(5px);
+            border-radius: 2px;
         }
 
         .nav-cta:hover {
@@ -118,46 +216,106 @@
         }
 
         main {
-            padding: 4rem 5%;
+            /* Keep top padding 0 so video touches top edge */
+            padding: 0 5%;
             max-width: 1400px;
             margin: 0 auto;
             position: relative;
             z-index: 2;
         }
 
+        /* --- HERO SECTION UPDATES --- */
         .hero {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
+            text-align: center;
+            gap: 2rem;
             margin-bottom: 8rem;
+            position: relative;
+            min-height: 80vh;
+            padding: 0; 
+            overflow: hidden;
+        }
+
+        .hero-video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .hero-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: saturate(0) contrast(1.1); 
+            transform: scale(1.05);
+        }
+
+        .hero-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(232, 233, 237, 0.5) 0%, rgba(232, 233, 237, 0.95) 100%);
+            mix-blend-mode: normal;
+            pointer-events: none;
+        }
+
+        .hero-video-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.15;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 5;
+            /* Top padding to clear header space */
+            padding: 120px 1rem 4rem 1rem;
         }
 
         .hero-content h1 {
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-size: clamp(2.5rem, 6vw, 5rem);
             font-weight: 900;
             line-height: 0.9;
             text-transform: uppercase;
             margin-bottom: 2rem;
             color: var(--text-main);
             letter-spacing: -2px;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.5);
         }
 
         .hero-content p {
-            max-width: 500px;
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
             font-size: 1.1rem;
             color: var(--text-muted);
-            margin-bottom: 3rem;
+            text-shadow: 0 1px 0px rgba(255,255,255,0.8);
         }
 
         .data-point {
             font-family: 'DM Sans', sans-serif;
             margin-bottom: 1rem;
-            display: flex;
+            display: inline-flex; 
             align-items: center;
             gap: 1rem;
             font-size: 1.2rem;
             font-weight: 500;
+            justify-content: center; 
         }
 
         .data-point span {
@@ -170,6 +328,7 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
             margin-bottom: 8rem;
+            padding-top: 4rem;
         }
 
         .spec-card {
@@ -192,19 +351,29 @@
             font-weight: 900;
         }
 
-        /* --- WHY CHOOSE US SECTION --- */
+        /* --- UPDATED SECTION STYLES --- */
         .why-us-section {
             margin-bottom: 8rem;
-            padding: 2rem 0;
+            padding: 2rem 0; 
         }
 
-        .section-header h2 {
-            font-size: 1.1rem; 
+        .location-section {
+            margin-bottom: 8rem;
+            padding: 3rem; 
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header h2, .location-header h2 {
+            font-size: 2.5rem; 
             font-family: 'DM Sans', sans-serif;
             text-transform: uppercase; 
-            color: var(--text-muted);
+            color: var(--text-main); 
             margin-bottom: 3rem;
             font-weight: 700;
+            text-align: center; 
+            letter-spacing: -1px;
+            line-height: 1.1;
         }
 
         .benefits-grid {
@@ -258,23 +427,7 @@
             line-height: 1.6;
         }
 
-        /* Location Section */
-        .location-section {
-            margin-bottom: 8rem;
-            padding: 2rem; 
-            position: relative;
-            z-index: 1;
-        }
-
-        .location-header h2 {
-            font-size: 1.1rem; 
-            font-family: 'DM Sans', sans-serif;
-            text-transform: uppercase; 
-            color: var(--text-muted);
-            margin-bottom: 3rem;
-            font-weight: 700;
-        }
-
+        /* Location Layout */
         .location-layout {
             display: grid;
             grid-template-columns: 1.4fr 1fr; 
@@ -511,6 +664,12 @@
             .hero-content h1 {
                 font-size: 3.5rem;
             }
+            .section-header h2, .location-header h2 {
+                font-size: 1.8rem; 
+            }
+            .location-section {
+                padding: 1.5rem; 
+            }
             .map-container {
                 min-height: 300px;
                 order: -1; 
@@ -529,13 +688,21 @@
 <body>
 
     <header>
-        <!-- Updated: Replaced text logo with image -->
-        <img src="/assets/logo.png" alt="VS Infratech Logo" class="logo"/>
-        <button class="nav-cta relief-outset">Download Brochure</button>
+        <img src="assets/logo.png" alt="VS Infratech Logo" class="logo" style="mix-blend-mode: multiply;"/>
+         <div class="nav-cta relief-outset">RERA : HRERA-PKL-HSR-770-2025</div>
     </header>
 
     <main>
+        <!-- HERO SECTION -->
         <section class="hero">
+            <div class="hero-video-container">
+                <video autoplay muted loop playsinline>
+                    <source src="assets/output.webm" type="video/webm">
+                    Your browser does not support video tag.
+                </video>
+                <div class="hero-video-overlay"></div>
+            </div>
+
             <div class="hero-content">
                 <div class="data-point reveal" style="animation-delay: 0.1s;">
                     <span class="relief-inset" style="padding: 0 10px;">NH9</span>
@@ -543,20 +710,10 @@
                 </div>
                 <h1 class="reveal" style="animation-delay: 0.2s;">Planned<br>Industrial<br>Excellence</h1>
                 <p class="reveal" style="animation-delay: 0.3s;">
-                    Strategic industrial plots tailored for logistics, warehousing, and manufacturing. Infrastructure-ready sites designed for the next generation of industry.
+                    Strategic industrial plots tailored for logistics, warehousing, and manufacturing. Infrastructure-ready sites designed for next generation of industry.
                 </p>
                 <div class="reveal" style="animation-delay: 0.4s;">
                     <button class="nav-cta relief-outset" style="padding: 1.2rem 2.5rem; font-weight: 700;">Get Details</button>
-                </div>
-            </div>
-            <div class="hero-visual reveal" style="animation-delay: 0.5s;">
-                <div class="relief-outset" style="height: 500px; width: 100%; position: relative; overflow: hidden; background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.02) 50%);">
-                    <div style="position: absolute; width: 150%; height: 2px; background: var(--shadow-dark); top: 30%; transform: rotate(-15deg);"></div>
-                    <div style="position: absolute; width: 150%; height: 2px; background: var(--shadow-dark); top: 60%; transform: rotate(-15deg);"></div>
-                    <div style="position: absolute; height: 150%; width: 2px; background: var(--shadow-dark); left: 40%; transform: rotate(-15deg);"></div>
-                    <div style="position: absolute; bottom: 2rem; right: 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
-                        SITE LAYOUT v1.02 // PLOT 325-1200 SQYD
-                    </div>
                 </div>
             </div>
         </section>
@@ -582,7 +739,7 @@
         <!-- WHY CHOOSE US SECTION -->
         <section class="why-us-section">
             <div class="section-header reveal">
-                <h2>Competitive Edge / Why Choose Us</h2>
+                <h2>Why Choose Us</h2>
             </div>
             <div class="benefits-grid">
                 <!-- 1. Strategic Location -->
@@ -644,7 +801,7 @@
         <!-- LOCATION SECTION -->
         <section class="location-section relief-inset reveal">
             <div class="location-header">
-                <h2>Strategic Connectivity / Area Overview</h2>
+                <h2>Strategic Connectivity</h2>
             </div>
             
             <div class="location-layout">
@@ -659,11 +816,13 @@
                 <!-- List Column -->
                 <div class="location-info">
                     <div class="location-grid">
-                        <div class="location-item">
+                        
+                        <!-- NH9 Interactive Item -->
+                        <div class="location-item interactive" id="loc-nh9">
                             <span>NH9 Highway</span>
                             <span class="dist">500 M</span>
                         </div>
-                        
+
                         <!-- Interactive Items with IDs -->
                         <div class="location-item interactive" id="loc-railway">
                             <span>Hansi Railway Station</span>
@@ -689,33 +848,51 @@
             <div class="form-text reveal">
                 <div class="relief-inset" style="padding: 1rem; width: fit-content; margin-bottom: 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 700;">SECURE YOUR PLOT</div>
                 <h2>Capitalize on Growth</h2>
-                <p style="color: var(--text-muted);">Invest in one of the most promising industrial hubs near Hansi. High-yield potential with ready infrastructure.</p>
+                <p style="color: var(--text-muted);">Invest in one of most promising industrial hubs near Hansi. High-yield potential with ready infrastructure.</p>
                 <br>
-                <h2>Contact Us :</h2>
+                <h2>Contact Us</h2>
                 <p style="">+91-9812053400</p>
                 <p style="">+91-9812590727</p>
                 
                 <p style="">enquiry@vsinfratech.co.in</p>
             </div>
             <div class="form-box relief-outset reveal">
-                <form>
-                    <div class="input-group">
-                        <label class="floating-label">Full Name</label>
-                        <input type="text" placeholder="John Doe" class="relief-inset">
-                    </div>
-                    <div class="input-group">
-                        <label class="floating-label">Phone Number</label>
-                        <input type="tel" placeholder="+91 ---- --- ---" class="relief-inset">
-                    </div>
-                    <div class="input-group">
-                        <label class="floating-label">Investment Intent</label>
-                        <input type="text" placeholder="Warehouse / Manufacturing" class="relief-inset">
-                    </div>
-                    <button type="submit" class="btn-submit relief-outset">Enquire Now</button>
+                <!-- UPDATED FORM START -->
+                <form id="enquiryForm">
+                  <div class="input-group">
+                    <label class="floating-label">Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe" class="relief-inset" required>
+                  </div>
+
+                  <div class="input-group">
+                    <label class="floating-label">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="+91 ---- --- ---" class="relief-inset" required>
+                  </div>
+
+                  <div class="input-group">
+                    <label class="floating-label">Investment Intent</label>
+                    <!-- CHANGED: Added 'required' attribute to enforce this field -->
+                    <input type="text" id="message" placeholder="Warehouse / Manufacturing" class="relief-inset" required>
+                  </div>
+
+                  <button type="submit" class="btn-submit relief-outset">Enquire Now</button>
                 </form>
+                <!-- UPDATED FORM END -->
             </div>
         </section>
     </main>
+
+    <!-- CUSTOM ALERT HTML (Initially Hidden) -->
+    <div id="custom-alert-overlay" class="custom-alert-overlay">
+        <div class="custom-alert">
+            <div class="alert-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5 5-5"></path><path d="M16 2a2 2 0 1 1-2 2v6a2 2 0 1 1 2 2 2 0 0 1-2-2z"></path></svg>
+            </div>
+            <div class="alert-title">Success</div>
+            <div class="alert-msg">Thank you! We’ll contact you shortly.</div>
+            <button class="alert-btn" onclick="hideCustomAlert()">Close</button>
+        </div>
+    </div>
 
     <footer style="padding: 4rem 5%; border-top: 1px solid var(--shadow-dark); display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; position: relative; z-index: 2;">
         <div>© 2023 VS INFRATECH. ALL RIGHTS RESERVED.</div>
@@ -759,6 +936,12 @@
         // AIRPORT COORDS
         const airportCoords = [29.17765657136811, 75.75477320959517];
 
+        // NH9 HIGHWAY COORDINATES
+        const nh9Coords = [
+            [29.088347344698107, 75.94554814284761], // Start
+            [29.094047563739547, 75.95318707411786]  // End
+        ];
+
         const latSum = projectCoords.reduce((sum, coord) => sum + coord[0], 0);
         const lngSum = projectCoords.reduce((sum, coord) => sum + coord[1], 0);
         const projectCenter = [latSum / 4, lngSum / 4];
@@ -789,6 +972,7 @@
             });
         }
 
+        // --- 1. PLOT POLYGON ---
         const plotPolygon = L.polygon(projectCoords, {
             color: '#2d3436',       
             weight: 3,              
@@ -803,7 +987,16 @@
             interactive: false
         }).addTo(map);
 
-        // Railway Markers
+        // --- 2. NH9 HIGHWAY LAYER ---
+        // Default style: Dashed Red Line
+        const nh9Highway = L.polyline(nh9Coords, {
+            color: '#e74c3c', // Reddish color for visibility
+            weight: 4,
+            opacity: 0.7,
+            dashArray: '5, 10' // Dashed line to indicate road
+        }).addTo(map);
+
+        // --- 3. RAILWAY MARKERS ---
         const railwayNormalIcon = createTechLabel('HANSI RAILWAY STATION', false);
         const railwayHighIcon = createTechLabel('HANSI RAILWAY STATION', true);
         
@@ -812,7 +1005,7 @@
             interactive: false
         }).addTo(map);
 
-        // Bus Stand Markers
+        // --- 4. BUS STAND MARKERS ---
         const busNormalIcon = createTechLabel('HANSI BUS STAND', false);
         const busHighIcon = createTechLabel('HANSI BUS STAND', true);
 
@@ -821,7 +1014,7 @@
             interactive: false
         }).addTo(map);
 
-        // AIRPORT Markers
+        // --- 5. AIRPORT MARKERS ---
         const airportNormalIcon = createTechLabel('HISAR AIRPORT', false);
         const airportHighIcon = createTechLabel('HISAR AIRPORT', true);
 
@@ -830,11 +1023,36 @@
             interactive: false
         }).addTo(map);
 
+
         // --- INTERACTION LOGIC ---
+
+        // Helper: Reset Highway Style
+        function resetNH9() {
+            nh9Highway.setStyle({
+                color: '#e74c3c',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '5, 10'
+            });
+        }
+
+        // Helper: Highlight Highway Style
+        function highlightNH9() {
+            nh9Highway.setStyle({
+                color: '#2d3436', // Match theme accent
+                weight: 8,
+                opacity: 1,
+                dashArray: null // Solid line
+            });
+            nh9Highway.bringToFront(); // Ensure it sits on top
+        }
 
         // Define the reset function to return map to original state
         function resetView() {
-            // Fly back to the initial bounds (Project, Railway, Bus)
+            // Reset Highway
+            resetNH9();
+
+            // Fly back to the initial bounds
             map.flyToBounds(group.getBounds(), { padding: [40, 40], duration: 1.5 });
 
             // Reset all icons to normal state
@@ -848,11 +1066,19 @@
             airportMarker.setZIndexOffset(0);
         }
 
-        // Add MouseLeave listener to the location list container
+        // Add MouseLeave listener to location list container
         const locationContainer = document.querySelector('.location-info');
         locationContainer.addEventListener('mouseleave', resetView);
 
-        // Railway Interaction
+        // 1. NH9 Interaction
+        const listNH9 = document.getElementById('loc-nh9');
+        listNH9.addEventListener('mouseenter', () => {
+            highlightNH9();
+            // Zoom to fit the highway with some padding
+            map.flyToBounds(nh9Highway.getBounds(), { padding: [100, 100], duration: 1.5 });
+        });
+
+        // 2. Railway Interaction
         const listRailway = document.getElementById('loc-railway');
         listRailway.addEventListener('mouseenter', () => {
             railwayMarker.setIcon(railwayHighIcon);
@@ -860,7 +1086,7 @@
             map.flyTo(railwayCoords, 15, { duration: 1.5 }); 
         });
 
-        // Bus Stand Interaction
+        // 3. Bus Stand Interaction
         const listBus = document.getElementById('loc-bus');
         listBus.addEventListener('mouseenter', () => {
             busMarker.setIcon(busHighIcon);
@@ -868,23 +1094,22 @@
             map.flyTo(busStandCoords, 15, { duration: 1.5 }); 
         });
 
-        // AIRPORT Interaction
+        // 4. AIRPORT Interaction
         const listAirport = document.getElementById('loc-airport');
         listAirport.addEventListener('mouseenter', () => {
             airportMarker.setIcon(airportHighIcon);
             airportMarker.setZIndexOffset(1000); 
-            // Using zoom 14 for Airport since it is further away
             map.flyTo(airportCoords, 14, { duration: 1.5 }); 
         });
 
 
-        // Initial View: Fit to Project, Railway, and Bus only.
+        // Initial View: Fit to Project, Railway, Bus, and NH9 Highway
         const group = new L.featureGroup([
             plotPolygon, 
             L.marker(projectCenter), 
             L.marker(railwayCoords), 
-            L.marker(busStandCoords)
-            // L.marker(airportCoords) <- Excluded from initial view
+            L.marker(busStandCoords),
+            nh9Highway // Include highway in initial view
         ]);
         
         map.fitBounds(group.getBounds(), { padding: [40, 40] });
@@ -894,5 +1119,71 @@
         }).addAttribution('&copy; OpenStreetMap contributors').addTo(map);
 
     </script>
+
+    <!-- FORM SUBMISSION SCRIPT -->
+    <script>
+        document.getElementById("enquiryForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            // 1. Get Values
+            const nameVal = document.getElementById("name").value.trim();
+            const phoneVal = document.getElementById("phone").value.trim();
+            const messageVal = document.getElementById("message").value.trim();
+
+            // 2. Validate: Browser 'required' attribute handles blocking, but we keep JS check for safety.
+            // If any field is empty, the browser likely blocked this event, but if it fires, we stop here.
+            if (!nameVal || !phoneVal || !messageVal) {
+                return;
+            }
+
+            const payload = {
+                name: nameVal,
+                phone_number: phoneVal,
+                message: messageVal,
+                ip: "", 
+                userAgent: navigator.userAgent || ""
+            };
+
+            try {
+                // 3. Submit to Apps Script
+                const res = await fetch("https://script.google.com/macros/s/AKfycbw4DfZDfIQEcKK3fAi6-QPKhNKUZE0iVGUUkGNwlDsMESMi1FtYcCzX75Wxjwq98vvQ/exec", {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // 4. On Success: Show Custom Alert & Reset Form
+                showCustomAlert();
+                e.target.reset();
+
+            } catch (err) {
+                alert("Something went wrong. Please try again.");
+                console.error(err);
+            }
+        });
+
+        // --- CUSTOM ALERT FUNCTIONS ---
+        function showCustomAlert() {
+            const overlay = document.getElementById('custom-alert-overlay');
+            if(overlay) {
+                overlay.classList.add('active');
+                // Auto hide after 3 seconds
+                setTimeout(() => {
+                    hideCustomAlert();
+                }, 3000);
+            }
+        }
+
+        function hideCustomAlert() {
+            const overlay = document.getElementById('custom-alert-overlay');
+            if(overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+    </script>
+
 </body>
 </html>
