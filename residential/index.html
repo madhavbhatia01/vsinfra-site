@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS INFRATECH | Premium Residential Plots</title>
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* PREMIUM RESIDENTIAL PALETTE */
+            --bg: #F2F0E9;            /* Warm Linen / Stone */
+            --surface: #F2F0E9;       /* Same as bg for seamless neumorphism */
+            
+            --shadow-light: #ffffff; 
+            --shadow-dark: #D6D4CD;   /* Cooler, softer shadow to create depth on warm bg */
+            
+            --primary: #1C1C1C;       /* Soft Charcoal (not harsh black) */
+            --gold: #A0895C;          /* Muted Antique Gold */
+            --gold-hover: #8C7449;    /* Darker Gold for hover */
+            
+            --text-main: #2C2C2C;     /* Dark Grey text */
+            --text-muted: #6B6B6B;    /* Muted text */
+            
+            --grid-color: rgba(28, 28, 28, 0.03); /* Subtle grid */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 50px 50px; 
+            background-position: center top;
+            background-attachment: fixed; 
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.7; 
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.04;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* NEUMORPHISM UTILITIES - Softened Edges */
+        .relief-outset {
+            background: var(--surface);
+            box-shadow: 10px 10px 20px var(--shadow-dark), 
+                        -10px -10px 20px var(--shadow-light);
+            border-radius: 12px; 
+            position: relative; 
+            z-index: 1;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .relief-outset:hover {
+            transform: translateY(-2px);
+        }
+
+        .relief-inset {
+            background: var(--surface);
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), 
+                        inset -6px -6px 12px var(--shadow-light);
+            border-radius: 12px;
+        }
+
+        /* --- CUSTOM ALERT STYLES --- */
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(28, 28, 28, 0.3); 
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-alert-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-alert {
+            background: var(--surface);
+            padding: 3rem 2rem;
+            box-shadow: 12px 12px 30px var(--shadow-dark), 
+                        -12px -12px 30px var(--shadow-light);
+            border-radius: 16px;
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .custom-alert-overlay.active .custom-alert {
+            transform: translateY(0) scale(1);
+        }
+
+        .alert-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--surface);
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            border-radius: 50%;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+        }
+
+        .alert-icon svg {
+            width: 32px;
+            height: 32px;
+            stroke: var(--gold);
+            stroke-width: 2.5;
+            fill: none;
+        }
+
+        .alert-title {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .alert-msg {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .alert-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            text-transform: uppercase;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+
+        .alert-btn:hover {
+            background: var(--gold);
+            color: white;
+            box-shadow: 0 5px 15px rgba(160, 137, 92, 0.3);
+        }
+
+        header {
+            padding: 1.2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(242, 240, 233, 0.9); /* Match BG */
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .logo {
+            height: 50px;
+            width: auto;  
+            object-fit: contain;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px; 
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+
+        .nav-cta {
+            padding: 0.8rem 2rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem; 
+            font-weight: 600;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px; 
+            transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--gold);
+            box-shadow: 6px 6px 12px var(--shadow-dark), 
+                        -6px -6px 12px var(--shadow-light);
+            border-radius: 30px; 
+        }
+
+        .nav-cta:hover {
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), 
+                        inset -3px -3px 6px var(--shadow-light);
+            color: var(--gold-hover);
+        }
+
+        main {
+            padding: 0 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- HERO SECTION UPDATES --- */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 2rem;
+            margin-bottom: 8rem;
+            position: relative;
+            min-height: 85vh;
+            padding: 0; 
+            overflow: hidden;
+        }
+
+        .hero-video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        /* VIDEO FILTERS: Sepia + Contrast for Warm Theme */
+        .hero-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: sepia(0.3) contrast(1.05) brightness(1.1) saturate(1.1); 
+            transform: scale(1.05); /* Prevents white edges on resize */
+        }
+
+        /* THEME-MATCHED OVERLAY */
+        .hero-video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Radial Gradient: Transparent Center -> Linen Background Color Edge */
+            background: radial-gradient(circle at center, rgba(242, 240, 233, 0.2) 0%, rgba(242, 240, 233, 0.95) 90%);
+            mix-blend-mode: normal;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* NOISE TEXTURE FOR PREMIUM FEEL */
+        .hero-video-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.05;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+            z-index: 0;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 5;
+            padding: 140px 1rem 4rem 1rem;
+            position: relative;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 6vw, 5.5rem);
+            font-weight: 300; 
+            line-height: 1.1;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            letter-spacing: -1px;
+            text-shadow: 0 4px 20px rgba(255,255,255,0.8);
+        }
+
+        .hero-content h1 span {
+            font-weight: 700; 
+            display: block;
+            color: var(--gold);
+        }
+
+        .hero-content p {
+            max-width: 600px;
+            margin: 0 auto 3rem auto;
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            text-shadow: 0 2px 0px rgba(255,255,255,0.9);
+        }
+
+        .data-point {
+            font-family: 'DM Sans', sans-serif;
+            margin-bottom: 1rem;
+            display: inline-flex; 
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            justify-content: center; 
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        .data-point span {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--gold);
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 8rem;
+            padding-top: 4rem;
+        }
+
+        .spec-card {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .spec-card h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem; 
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 1.5px;
+        }
+
+        .spec-card .value {
+            font-size: 3rem;
+            font-weight: 300; 
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .spec-card p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* --- SECTION STYLES --- */
+        .section-header h2, .location-header h2 {
+            font-size: 2.5rem; 
+            font-family: 'DM Sans', sans-serif;
+            text-transform: uppercase; 
+            color: var(--primary); 
+            margin-bottom: 3rem;
+            font-weight: 700;
+            text-align: center; 
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .benefit-card {
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: transform 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .benefit-card:hover {
+            border-left: 3px solid var(--gold);
+        }
+
+        .icon-box {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            color: var(--gold);
+        }
+
+        .icon-box svg {
+            width: 26px;
+            height: 26px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .benefit-card h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.4rem;
+            text-transform: capitalize; 
+            letter-spacing: -0.2px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .benefit-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Location Layout */
+        .location-section {
+            margin-top: 6rem;       /* Added margin */
+            margin-bottom: 5rem;     
+            padding: 4rem;           
+            position: relative;
+            z-index: 1;
+        }
+
+        .location-layout {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr; 
+            gap: 2rem;                
+            align-items: stretch;    
+        }
+
+        .map-container {
+            position: relative;
+            height: 100%;             
+            min-height: 400px;        
+            overflow: hidden;
+            border-radius: 12px;      
+            z-index: 2;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        #industrial-map {
+            width: 100%;
+            height: 100%;
+            filter: grayscale(20%) sepia(10%) contrast(0.9); 
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(242, 240, 233, 0.95);
+            padding: 0.5rem 1.2rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem; 
+            font-weight: 700;
+            letter-spacing: 1px;
+            border: 1px solid rgba(160, 137, 92, 0.2);
+            color: var(--primary);
+            z-index: 1000; 
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .location-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; 
+            height: 100%;
+            padding: 1rem 0;        
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 0;
+        }
+
+        .location-item {
+            padding: 1.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .location-item.interactive {
+            cursor: pointer;
+        }
+        
+        .location-item.interactive:hover {
+            padding-left: 1.5rem; 
+        }
+
+        .location-item .dist {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 1.1rem;
+        }
+        
+        .location-item span:first-child {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        /* Form Section */
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            padding: 4rem 0;
+        }
+
+        .form-text h2 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+        
+        .form-text h2 strong {
+            font-weight: 700;
+        }
+
+        .form-box {
+            padding: 3rem;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            border: none;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            background: var(--surface);
+            color: var(--primary);
+            margin-top: 0.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: box-shadow 0.3s ease;
+        }
+
+        input:focus {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), 
+                        inset -4px -4px 8px var(--shadow-light);
+        }
+
+        /* --- BUTTON SUBMISSION STYLES --- */
+        
+        /* Loading Spinner Animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Button Normal State */
+        .btn-submit {
+            width: 100%;
+            padding: 1.5rem;
+            border: none;
+            background: var(--gold);
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(160, 137, 92, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            background: var(--gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(160, 137, 92, 0.3);
+        }
+
+        /* Button Active (Pressed) State */
+        .btn-submit:active {
+            transform: translateY(1px);
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), 
+                        inset -3px -3px 6px var(--shadow-light);
+        }
+
+        /* Button Loading State */
+        .btn-submit.loading {
+            pointer-events: none; /* Prevent double clicks */
+            background: var(--gold-hover);
+            color: rgba(255,255,255,0.9);
+            cursor: wait;
+        }
+
+        /* The Spinner Element */
+        .btn-submit.loading::after {
+            content: "";
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+
+        .floating-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem; 
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-left: 1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* --- MAP MARKER STYLES --- */
+        .map-dot-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .map-marker-label {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            white-space: nowrap;
+            border: 1px solid var(--gold);
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .map-dot-container {
+            position: relative;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-dot-core {
+            width: 12px;
+            height: 12px;
+            background-color: var(--gold);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .map-dot-ring {
+            width: 12px;
+            height: 12px;
+            background-color: rgba(160, 137, 92, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 1;
+            animation: blink-pulse 2.5s infinite;
+        }
+
+        .map-dot-wrapper.is-highlight .map-marker-label {
+            background: var(--primary);
+            color: var(--gold);
+            box-shadow: 0 8px 20px rgba(28, 28, 28, 0.2);
+        }
+
+        .map-dot-wrapper.is-highlight .map-dot-core {
+            background-color: var(--primary);
+            transform: scale(1.2);
+        }
+        
+        .map-dot-wrapper.is-highlight .map-dot-ring {
+            background-color: rgba(28, 28, 28, 0.3);
+            animation-duration: 1.5s;
+        }
+
+        @keyframes blink-pulse {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(3.5); opacity: 0; }
+        }
+
+        @media (max-width: 968px) {
+            .hero, .location-layout, .form-container {
+                grid-template-columns: 1fr;
+            }
+            .hero-content h1 {
+                font-size: 3.2rem;
+            }
+            .section-header h2, .location-header h2 {
+                font-size: 1.8rem; 
+            }
+            
+            .location-section {
+                margin-top: 4rem;      
+                padding: 2rem;        
+            }
+            .map-container {
+                min-height: 300px;   
+                height: auto;        
+                order: -1;           
+            }
+            
+            .location-grid {
+                gap: 1rem;
+            }
+            .location-item {
+                background: rgba(255,255,255,0.6);
+                padding: 1.2rem;
+                border-radius: 8px;
+                border-bottom: none;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="assets/logo.png" alt="VS Infratech Logo" class="logo" style="mix-blend-mode: multiply;"/>
+         <div class="nav-cta relief-outset">RERA : HRERA-PKL-HSR-770-2025</div>
+    </header>
+
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <div class="hero-video-container">
+                <video autoplay muted loop playsinline>
+                    <source src="assets/output.webm" type="video/webm">
+                    Your browser does not support video tag.
+                </video>
+                <div class="hero-video-overlay"></div>
+            </div>
+
+            <div class="hero-content">
+                <div class="data-point reveal" style="animation-delay: 0.1s;">
+                    <span class="relief-inset" style="padding: 0 10px; color: var(--primary);">NH9</span>
+                    <p>CONNECTIVITY</p>
+                </div>
+                <h1 class="reveal" style="animation-delay: 0.2s;">Planned<br><span>Excellence</span></h1>
+                <p class="reveal" style="animation-delay: 0.3s;">
+                    Premium plots designed for modern living and growth. A secure, well-connected enclave offering perfect foundation for your dream home.
+                </p>
+                <div class="reveal" style="animation-delay: 0.4s;">
+                    <button class="nav-cta relief-outset" style="padding: 1.2rem 2.5rem; font-weight: 600; color: var(--primary); border: 1px solid var(--gold);">Get Details</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="spec-grid">
+            <div class="spec-card relief-outset reveal">
+                <h3>Plot Size</h3>
+                <div class="value">325 – 1200</div>
+                <p>Square Yards</p>
+            </div>
+            <div class="spec-card relief-outset reveal" style="animation-delay: 0.1s;">
+                <h3>Possession</h3>
+                <div class="value">Ready</div>
+                <p>Infrastructure Complete</p>
+            </div>
+            <div class="spec-card relief-outset reveal" style="animation-delay: 0.2s;">
+                <h3>Potential</h3>
+                <div class="value">High</div>
+                <p>Residential & Growth</p>
+            </div>
+        </section>
+
+        <!-- WHY CHOOSE US SECTION -->
+        <section class="why-us-section">
+            <div class="section-header reveal">
+                <h2>Premium Advantages</h2>
+            </div>
+            <div class="benefits-grid">
+                <!-- 1. Strategic Location -->
+                <div class="benefit-card relief-outset reveal" style="animation-delay: 0.1s;">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                    </div>
+                    <h3>Prime Location</h3>
+                    <p>Situated just 500 meters from NH9 Highway, ensuring you stay connected to city while enjoying a peaceful environment.</p>
+                </div>
+
+                <!-- 2. Prime Connectivity -->
+                <div class="benefit-card relief-outset reveal" style="animation-delay: 0.2s;">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="3"></circle><circle cx="12" cy="5" r="3"></circle><circle cx="19" cy="12" r="3"></circle><path d="M7.5 11l2.5-4 4.5 4"></path></svg>
+                    </div>
+                    <h3>Seamless Connectivity</h3>
+                    <p>Excellent access to Hansi Bus Stand, Railway Station, and Hisar Airport, facilitating travel for you and your family.</p>
+                </div>
+
+                <!-- 3. Flexible Zoning -->
+                <div class="benefit-card relief-outset reveal" style="animation-delay: 0.3s;">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    </div>
+                    <h3>Versatile Plots</h3>
+                    <p>Plots ranging from 325 to 1200 Sq. Yards, allowing you freedom to build a home that suits your lifestyle.</p>
+                </div>
+
+                <!-- 4. Secure & Gated -->
+                <div class="benefit-card relief-outset reveal" style="animation-delay: 0.4s;">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <h3>Secure Enclave</h3>
+                    <p>A gated community environment ensuring safety for your loved ones and peace of mind for your future.</p>
+                </div>
+
+                <!-- 5. Infrastructure Ready -->
+                <div class="benefit-card relief-outset reveal" style="animation-delay: 0.5s;">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    </div>
+                    <h3>Modern Infrastructure</h3>
+                    <p>Equipped with wide internal roads, reliable electricity, and water supply, ready for immediate construction.</p>
+                </div>
+
+                <!-- 6. Trusted Developer -->
+                <div class="benefit-card relief-outset reveal" style="animation-delay: 0.6s;">
+                    <div class="icon-box">
+                        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <h3>Trusted Legacy</h3>
+                    <p>Developed by VS Infratech, a name synonymous with quality, transparency, and timely delivery in region.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOCATION SECTION -->
+        <section class="location-section relief-inset reveal">
+            <div class="location-header">
+                <h2>Strategic Connectivity</h2>
+            </div>
+            
+            <div class="location-layout">
+                <!-- Map Column -->
+                <div class="map-container relief-outset">
+                    <div class="map-overlay">
+                        GEO LOCATION
+                    </div>
+                    <div id="industrial-map"></div>
+                </div>
+
+                <!-- List Column -->
+                <div class="location-info">
+                    <div class="location-grid">
+                        
+                        <!-- NH9 Interactive Item -->
+                        <div class="location-item interactive" id="loc-nh9">
+                            <span>NH9 Highway</span>
+                            <span class="dist">500 M</span>
+                        </div>
+
+                        <!-- Interactive Items with IDs -->
+                        <div class="location-item interactive" id="loc-railway">
+                            <span>Hansi Railway Station</span>
+                            <span class="dist">3 KM</span>
+                        </div>
+                        
+                        <div class="location-item interactive" id="loc-bus">
+                            <span>Hansi Bus Stand</span>
+                            <span class="dist">4 KM</span>
+                        </div>
+                        
+                        <!-- NEW INTERACTIVE ITEM -->
+                        <div class="location-item interactive" id="loc-airport">
+                            <span>Hisar Airport / City</span>
+                            <span class="dist">20 KM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-container">
+            <div class="form-text reveal">
+                <div class="relief-inset" style="padding: 1rem; width: fit-content; margin-bottom: 2rem; font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--gold);">INVESTMENT OPPORTUNITY</div>
+                <h2>Secure Your <br><strong>Future</strong></h2>
+                <p style="color: var(--text-muted);">Invest in one of most promising developing hubs near Hansi. High-yield potential with ready infrastructure.</p>
+                <br>
+                <h2>Contact Us</h2>
+                <p style="">+91-9812053400</p>
+                <p style="">+91-9812590727</p>
+                
+                <p style="">enquiry@vsinfratech.co.in</p>
+            </div>
+            <div class="form-box relief-outset reveal">
+                <!-- UPDATED FORM START -->
+                <form id="enquiryForm">
+                  <div class="input-group">
+                    <label class="floating-label">Full Name</label>
+                    <input type="text" id="name" placeholder="John Doe" class="relief-inset" required>
+                  </div>
+
+                  <div class="input-group">
+                    <label class="floating-label">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="+91 ---- --- ---" class="relief-inset" required>
+                  </div>
+
+                  <div class="input-group">
+                    <label class="floating-label">Interest</label>
+                    <input type="text" id="message" placeholder="Residential Plot / Investment" class="relief-inset" required>
+                  </div>
+
+                  <button type="submit" class="btn-submit relief-outset">
+                      <span>Enquire Now</span>
+                  </button>
+                </form>
+                <!-- UPDATED FORM END -->
+            </div>
+        </section>
+    </main>
+
+    <!-- CUSTOM ALERT HTML (Initially Hidden) -->
+    <div id="custom-alert-overlay" class="custom-alert-overlay">
+        <div class="custom-alert">
+            <div class="alert-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5 5-5"></path><path d="M16 2a2 2 0 1 1-2 2v6a2 2 0 1 1 2 2 2 0 0 1-2-2z"></path></svg>
+            </div>
+            <div class="alert-title">Success</div>
+            <div class="alert-msg">Thank you! We’ll contact you shortly.</div>
+            <button class="alert-btn" onclick="hideCustomAlert()">Close</button>
+        </div>
+    </div>
+
+    <footer style="padding: 4rem 5%; border-top: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; position: relative; z-index: 2;">
+        <div>© 2023 VS INFRATECH. ALL RIGHTS RESERVED.</div>
+        <div>DEVELOPED NEAR NH9, HANSI, HARYANA.</div>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <script>
+        // Simple reveal animation observer
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = "1";
+                    entry.target.classList.add('reveal');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            el.style.opacity = "0";
+            observer.observe(el);
+        });
+
+        // --- MAP SCRIPT ---
+
+        const projectCoords = [
+            [29.1007616201615, 75.93806870040548],
+            [29.095281375008504, 75.93911718050427],
+            [29.09518142861931, 75.9413094570745],
+            [29.101111413138593, 75.9395365725438]
+        ];
+
+        const busStandCoords = [29.094525762642004, 75.96500703769858];
+        const railwayCoords = [29.088273115054392, 75.94743099883901];
+        const airportCoords = [29.17765657136811, 75.75477320959517];
+
+        const nh9Coords = [
+            [29.088347344698107, 75.94554814284761], 
+            [29.094047563739547, 75.95318707411786]  
+        ];
+
+        const latSum = projectCoords.reduce((sum, coord) => sum + coord[0], 0);
+        const lngSum = projectCoords.reduce((sum, coord) => sum + coord[1], 0);
+        const projectCenter = [latSum / 4, lngSum / 4];
+
+        const map = L.map('industrial-map', {
+            zoomControl: false, 
+            attributionControl: false 
+        });
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+        function createTechLabel(text, isPrimary) {
+            const highlightClass = isPrimary ? 'is-highlight' : '';
+            
+            return L.divIcon({
+                className: 'custom-label',
+                html: `<div class="map-dot-wrapper ${highlightClass}">
+                    <div class="map-marker-label">${text}</div>
+                    <div class="map-dot-container">
+                        <div class="map-dot-ring"></div>
+                        <div class="map-dot-core"></div>
+                    </div>
+                </div>`,
+                iconSize: [120, 50], 
+                iconAnchor: [60, 50] 
+            });
+        }
+
+        // --- COLORS UPDATED FOR PREMIUM THEME ---
+        const themeColor = '#A0895C'; // Gold
+        const themeDark = '#1C1C1C';  // Charcoal
+
+        // --- 1. PLOT POLYGON ---
+        const plotPolygon = L.polygon(projectCoords, {
+            color: themeDark,       
+            weight: 3,              
+            opacity: 1,             
+            fillColor: themeColor,   
+            fillOpacity: 0.3,       
+            lineJoin: 'round'
+        }).addTo(map);
+
+        const projectMarker = L.marker(projectCenter, {
+            icon: createTechLabel('VS INFRATECH / PROJECT', false),
+            interactive: false
+        }).addTo(map);
+
+        // --- 2. NH9 HIGHWAY LAYER ---
+        // Style: Dark Grey/Black to match premium look
+        const nh9Highway = L.polyline(nh9Coords, {
+            color: '#8C8C8C', // Subtle grey road
+            weight: 4,
+            opacity: 0.6,
+            dashArray: '5, 10' 
+        }).addTo(map);
+
+        // --- 3. RAILWAY MARKERS ---
+        const railwayNormalIcon = createTechLabel('HANSI RAILWAY STATION', false);
+        const railwayHighIcon = createTechLabel('HANSI RAILWAY STATION', true);
+        
+        const railwayMarker = L.marker(railwayCoords, {
+            icon: railwayNormalIcon,
+            interactive: false
+        }).addTo(map);
+
+        // --- 4. BUS STAND MARKERS ---
+        const busNormalIcon = createTechLabel('HANSI BUS STAND', false);
+        const busHighIcon = createTechLabel('HANSI BUS STAND', true);
+
+        const busMarker = L.marker(busStandCoords, {
+            icon: busNormalIcon,
+            interactive: false
+        }).addTo(map);
+
+        // --- 5. AIRPORT MARKERS ---
+        const airportNormalIcon = createTechLabel('HISAR AIRPORT', false);
+        const airportHighIcon = createTechLabel('HISAR AIRPORT', true);
+
+        const airportMarker = L.marker(airportCoords, {
+            icon: airportNormalIcon,
+            interactive: false
+        }).addTo(map);
+
+
+        // --- INTERACTION LOGIC ---
+
+        function resetNH9() {
+            nh9Highway.setStyle({
+                color: '#8C8C8C',
+                weight: 4,
+                opacity: 0.6,
+                dashArray: '5, 10'
+            });
+        }
+
+        function highlightNH9() {
+            nh9Highway.setStyle({
+                color: themeDark, 
+                weight: 7,
+                opacity: 1,
+                dashArray: null 
+            });
+            nh9Highway.bringToFront(); 
+        }
+
+        function resetView() {
+            resetNH9();
+
+            map.flyToBounds(group.getBounds(), { padding: [40, 40], duration: 1.5 });
+
+            railwayMarker.setIcon(railwayNormalIcon);
+            busMarker.setIcon(busNormalIcon);
+            airportMarker.setIcon(airportNormalIcon);
+
+            railwayMarker.setZIndexOffset(0);
+            busMarker.setZIndexOffset(0);
+            airportMarker.setZIndexOffset(0);
+        }
+
+        const locationContainer = document.querySelector('.location-info');
+        locationContainer.addEventListener('mouseleave', resetView);
+
+        // 1. NH9 Interaction
+        const listNH9 = document.getElementById('loc-nh9');
+        listNH9.addEventListener('mouseenter', () => {
+            highlightNH9();
+            map.flyToBounds(nh9Highway.getBounds(), { padding: [100, 100], duration: 1.5 });
+        });
+
+        // 2. Railway Interaction
+        const listRailway = document.getElementById('loc-railway');
+        listRailway.addEventListener('mouseenter', () => {
+            railwayMarker.setIcon(railwayHighIcon);
+            railwayMarker.setZIndexOffset(1000); 
+            map.flyTo(railwayCoords, 15, { duration: 1.5 }); 
+        });
+
+        // 3. Bus Stand Interaction
+        const listBus = document.getElementById('loc-bus');
+        listBus.addEventListener('mouseenter', () => {
+            busMarker.setIcon(busHighIcon);
+            busMarker.setZIndexOffset(1000); 
+            map.flyTo(busStandCoords, 15, { duration: 1.5 }); 
+        });
+
+        // 4. AIRPORT Interaction
+        const listAirport = document.getElementById('loc-airport');
+        listAirport.addEventListener('mouseenter', () => {
+            airportMarker.setIcon(airportHighIcon);
+            airportMarker.setZIndexOffset(1000); 
+            map.flyTo(airportCoords, 14, { duration: 1.5 }); 
+        });
+
+
+        // Initial View: Fit to Project, Railway, Bus, and NH9 Highway
+        const group = new L.featureGroup([
+            plotPolygon, 
+            L.marker(projectCenter), 
+            L.marker(railwayCoords), 
+            L.marker(busStandCoords),
+            nh9Highway 
+        ]);
+        
+        map.fitBounds(group.getBounds(), { padding: [40, 40] });
+
+        L.control.attribution({
+            prefix: false
+        }).addAttribution('&copy; OpenStreetMap contributors').addTo(map);
+
+    </script>
+
+    <!-- FORM SUBMISSION SCRIPT -->
+    <script>
+        document.getElementById("enquiryForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            // 1. Get Values
+            const nameVal = document.getElementById("name").value.trim();
+            const phoneVal = document.getElementById("phone").value.trim();
+            const messageVal = document.getElementById("message").value.trim();
+
+            // 2. Validate
+            if (!nameVal || !phoneVal || !messageVal) {
+                return;
+            }
+
+            // 3. IMMEDIATE UI FEEDBACK
+            // Show alert immediately without waiting for fetch
+            showCustomAlert();
+            
+            // Reset form immediately
+            e.target.reset();
+            
+            // NOTE: We do NOT add the "loading" class to the button because 
+            // the alert provides the feedback. The fetch happens in background.
+            
+            const payload = {
+                name: nameVal,
+                phone_number: phoneVal,
+                message: messageVal,
+                ip: "", 
+                userAgent: navigator.userAgent || ""
+            };
+
+            // 4. Submit to Apps Script (Background Process)
+            fetch("https://script.google.com/macros/s/AKfycbw4DfZDfIQEcKK3fAi6-QPKhNKUZE0iVGUUkGNwlDsMESMi1FtYcCzX75Wxjwq98vvQ/exec", {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            })
+            .catch(err => {
+                // Silent error handling
+                console.error("Submission failed:", err);
+            });
+        });
+
+        // --- CUSTOM ALERT FUNCTIONS ---
+        function showCustomAlert() {
+            const overlay = document.getElementById('custom-alert-overlay');
+            if(overlay) {
+                overlay.classList.add('active');
+                // Auto hide after 3 seconds
+                setTimeout(() => {
+                    hideCustomAlert();
+                }, 3000);
+            }
+        }
+
+        function hideCustomAlert() {
+            const overlay = document.getElementById('custom-alert-overlay');
+            if(overlay) {
+                overlay.classList.remove('active');
+            }
+        }
+    </script>
+
+</body>
+</html>
