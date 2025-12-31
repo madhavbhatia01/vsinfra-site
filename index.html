@@ -1,19 +1,23 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html class="light scroll-smooth" lang="en">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>VS Infratech - Premium Real Estate Development</title>
-    
+
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    
+
     <!-- Configuration -->
     <script id="tailwind-config">
         tailwind.config = {
@@ -35,17 +39,17 @@
                         "full": "9999px"
                     },
                     animation: {
-                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
-                        'zoom-slow': 'zoomSlow 20s linear alternate infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.4s ease-out forwards',
                     },
                     keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
                         },
-                        zoomSlow: {
-                            '0%': { transform: 'scale(1)' },
-                            '100%': { transform: 'scale(1.1)' },
+                        slideInRight: {
+                            '0%': { transform: 'translateX(100%)' },
+                            '100%': { transform: 'translateX(0)' },
                         }
                     }
                 },
@@ -54,173 +58,464 @@
     </script>
 
     <style>
-        /* Page Transition Container */
+        /* Base Styles */
+        body {
+            /* Prevent scrollbar jumping when mobile menu opens */
+            scrollbar-gutter: stable;
+        }
+
+        /* 
+           APP CONTAINER LOGIC 
+           Desktop: Fixed height, hidden overflow (App feel)
+           Mobile: Natural flow for scrolling
+        */
         .app-container {
-            position: relative;
             width: 100%;
             height: 100vh;
             overflow: hidden;
+            position: relative;
         }
 
+        @media (max-width: 1024px) {
+            .app-container {
+                height: auto;
+                min-height: 100dvh;
+                overflow: visible;
+                display: block;
+                /* Ensure it doesn't flex-stretch irregularly */
+            }
+
+            body,
+            html {
+                height: auto;
+                overflow-x: hidden;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Page View Logic */
         .page-view {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
-            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            overflow-y: auto; /* Allow scrolling within the page */
+            overflow-y: auto;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @media (min-width: 1024px) {
+            .page-view {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+        }
+
+        @media (max-width: 1024px) {
+
+            /* General page-view (Home) becomes relative for natural scroll */
+            #home-page.page-view {
+                position: relative;
+                height: auto;
+                overflow: visible !important;
+            }
+
+            /* Overlays (About) must remain fixed and scrollable internally */
+            #about-page.page-view {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 200;
+                height: 100dvh !important;
+                width: 100vw;
+                overflow-y: scroll !important;
+                /* Force scroll context */
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                will-change: transform;
+            }
         }
 
         /* Split Pane Logic */
         .split-pane {
-            transition: background-color 0.3s ease; 
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            height: 100%;
         }
 
-        /* DISABLED: Split screen hover expansion effect */
-        
+        @media (max-width: 1024px) {
+            .split-pane {
+                width: 100%;
+                height: auto;
+                min-height: 80vh;
+            }
+        }
+
+        /* Mobile Menu Animations */
+        #mobile-menu .menu-item {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+        }
+
+        #mobile-menu.visible .menu-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #mobile-menu.visible .menu-item:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        #mobile-menu.visible .menu-item:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        #mobile-menu.visible .menu-item:nth-child(3) {
+            transition-delay: 0.3s;
+        }
+
+        /* Footer Logic */
+        .app-footer {
+            /* Desktop: Absolute at bottom */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .app-footer {
+                position: relative;
+                /* Mobile: Flow with content */
+                margin-top: auto;
+            }
+        }
+
+        /* Mobile Menu Overlay */
+        #mobile-menu {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
         /* Utility for image scaling */
         .bg-image-anim {
-            transition: none; 
+            transition: transform 10s ease;
+        }
+
+        .split-pane:hover .bg-image-anim {
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-[#0d141b] font-display overflow-hidden selection:bg-primary selection:text-white">
 
-<div class="app-container">
-    
-    <!-- HOME PAGE (Original Hero Section) -->
-    <div id="home-page" class="page-view z-10">
-        <div class="flex flex-col min-h-screen h-full relative">
-            
-            <!-- Header -->
-            <header class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between whitespace-nowrap px-6 py-4 lg:px-10 pointer-events-none">
-                <!-- Logo -->
-                <div class="flex items-center gap-3 text-white drop-shadow-md pointer-events-auto cursor-pointer">
-                    <!-- CHANGED: Replaced H2 Text with IMG -->
-                    <img src="/assets/infratech-logo.png" alt="VS Infratech" class="h-16 w-auto drop-shadow-md">
-                </div>
+<body
+    class="bg-background-light dark:bg-background-dark text-[#0d141b] font-display selection:bg-primary selection:text-white overflow-x-hidden">
 
-                <!-- Nav -->
-                <div class="flex flex-1 justify-end gap-8 pointer-events-auto">
-                    <div class="hidden md:flex items-center gap-8 bg-black/20 backdrop-blur-md px-6 py-2 rounded-full border border-white/10">
-                        <!-- <a class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md" href="#">Home</a> -->
-                        <a class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md" href="#">Projects</a>
-                        <!-- Added ID for JS interaction -->
-                        <a id="nav-about" class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md cursor-pointer" href="#">About Us</a>
-                        <!-- <a class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md" href="#">Contact</a> -->
+    <div class="app-container">
+
+        <!-- ======================= HOME PAGE ======================= -->
+        <div id="home-page" class="page-view z-10 bg-black">
+            <div class="flex flex-col lg:flex-row relative min-h-screen lg:h-full">
+
+                <!-- Header -->
+                <header
+                    class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between whitespace-nowrap px-6 py-4 lg:px-10 pointer-events-none">
+                    <!-- Logo -->
+                    <div class="flex items-center gap-3 text-white drop-shadow-md pointer-events-auto cursor-pointer">
+                        <!-- CHANGED: Replaced H2 Text with IMG -->
+                        <img src="/assets/infratech-logo.png" alt="VS Infratech" class="h-16 w-auto drop-shadow-md">
                     </div>
-                    <!-- Mobile Menu Icon -->
-                    <button class="md:hidden text-white bg-white/10 p-2 rounded-lg backdrop-blur-md pointer-events-auto">
-                        <span class="material-symbols-outlined">menu</span>
+
+                    <!-- Desktop Nav -->
+                    <div class="hidden lg:flex flex-1 justify-end gap-8 pointer-events-auto">
+                        <div
+                            class="flex items-center gap-8 bg-black/20 backdrop-blur-md px-6 py-2 rounded-full border border-white/10">
+                            <a class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md"
+                                href="#">Projects</a>
+                            <a id="nav-about"
+                                class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md cursor-pointer"
+                                href="#">About Us</a>
+                            <a class="text-white text-sm font-bold leading-normal hover:text-primary transition-colors drop-shadow-md"
+                                href="/industrial-park/announcements">Announcements</a>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Menu Trigger -->
+                    <button id="menu-btn"
+                        class="lg:hidden text-white bg-black/20 p-2 rounded-lg backdrop-blur-md pointer-events-auto hover:bg-primary transition-colors">
+                        <span class="material-symbols-outlined text-3xl">menu</span>
+                    </button>
+                </header>
+
+                <!-- Main Content Wrapper -->
+                <main class="split-container flex-1 flex flex-col lg:flex-row relative w-full">
+
+                    <!-- Left Pane: Industrial -->
+                    <div id="industrial" class="split-pane group relative flex flex-col justify-center items-center">
+                        <!-- Background Image -->
+                        <div class="absolute inset-0 bg-cover bg-center bg-image-anim"
+                            data-alt="Modern large scale industrial warehouse logistics park with solar panels"
+                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWsLeuqcTSFp-FQkuuPoGZTN2XQY6cI9vuJUsfqV1yRtkHOGPywhr8QE-kg3tVmlXqR_LHrqn8nRcmwQF2sWPr5XxzfE-X8UL8atJW0upGV3CANjmKqTKVP575L9pGvBGJtd2eo4Aoa00CISaQZhp60ve2_--PUSdOAawhvlAUug1bkrTAtE_guK5egE9b3n_FHgVz4CeL5KokK8IgOKQQ_qSirDtN70UF0ORm7XTyzKiT97n8bl1-8KE3iY0hyvE4qxDyuD8OMIc");'>
+                        </div>
+
+                        <!-- Gradient Overlay -->
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-slate-900/20 lg:to-transparent">
+                        </div>
+
+                        <!-- Content Wrapper -->
+                        <div class="relative z-10 p-8 lg:p-12 w-full flex flex-col items-center justify-center h-full">
+                            <!-- mt-12 added to push text down on mobile, lg:mt-0 resets it for desktop -->
+                            <div class="text-center max-w-xl animate-fade-in mt-12 lg:mt-0">
+
+                                <h1
+                                    class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg mb-6">
+                                    VS Industrial Park
+                                </h1>
+
+                                <p
+                                    class="text-base md:text-lg text-slate-200 font-medium leading-relaxed max-w-md mx-auto mb-8 drop-shadow-md">
+                                    World-class infrastructure designed to scale your business operations efficiently.
+                                </p>
+
+                                <a href="/industrial-park"
+                                    class="group/btn relative inline-flex items-center justify-center overflow-hidden rounded-full h-14 px-10 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-blue-600 shadow-xl hover:shadow-2xl hover:-translate-y-1 border border-white/10">
+                                    <span
+                                        class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></span>
+                                    <span class="relative z-10 flex items-center gap-2">
+                                        Explore Industrial
+                                        <span
+                                            class="material-symbols-outlined text-lg transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Pane: Residential -->
+                    <div id="residency" class="split-pane group relative flex flex-col justify-center items-center">
+                        <!-- Background Image -->
+                        <div class="absolute inset-0 bg-cover bg-center bg-image-anim"
+                            data-alt="Luxury high rise apartment building exterior with modern glass architecture at sunset"
+                            style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDiX_ME1eV27TD-FNDO76f7DO4IWsptOeBTcxed1subGTdiZSInM2_xbTsR3nGKwmsRi4MHAcMRwnj-pdcn59X-8yE_jECT1YVW3Nvdi0l2CgVnW9fJcR3Ad_ZrClenjxQv1F-bOzKz0YsITOb-L_9u6TYQq_U9z1YwtFQZ58eefryfA03hDWFq5ual1QQQIMH5gyw-FEcDXHCFsWym8xX88AlpeDIjQSLHv7nlxNv_dFysgSe_SXChSjUtKroWfNfnJl1dndwPvlo");'>
+                        </div>
+
+                        <!-- Gradient Overlay -->
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent lg:bg-gradient-to-l lg:from-black/80 lg:via-slate-900/20 lg:to-transparent">
+                        </div>
+
+                        <!-- Content Wrapper -->
+                        <div class="relative z-10 p-8 lg:p-12 w-full flex flex-col items-center justify-center h-full">
+                            <!-- mt-8 added to push text down slightly on mobile, lg:mt-0 resets it for desktop -->
+                            <div class="text-center max-w-xl animate-fade-in mt-8 lg:mt-0"
+                                style="animation-delay: 0.2s;">
+
+                                <h1
+                                    class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg mb-6">
+                                    VS Residency
+                                </h1>
+
+                                <p
+                                    class="text-base md:text-lg text-slate-200 font-medium leading-relaxed max-w-md mx-auto mb-8 drop-shadow-md">
+                                    Living redefined. A perfect blend of comfort, luxury, and modern community living.
+                                </p>
+
+                                <a href="/residency/"
+                                    class="group/btn relative inline-flex items-center justify-center overflow-hidden rounded-full h-14 px-10 bg-white text-[#0d141b] text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                                    <span class="relative z-10 flex items-center gap-2">
+                                        Explore Residential
+                                        <span
+                                            class="material-symbols-outlined text-lg transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+
+                <!-- Footer -->
+                <footer
+                    class="app-footer z-50 py-6 px-6 lg:px-10 pointer-events-none bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                    <div
+                        class="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-xs font-medium pointer-events-auto">
+                        <p>© 2024 VS Infratech. All rights reserved.</p>
+
+                        <div class="flex gap-2 items-center">
+                            <!-- Mail Icon -->
+                            <a href="mailto:info@vsinfratech.com"
+                                class="group flex items-center overflow-hidden bg-white/10 hover:bg-primary rounded-full w-10 h-10 hover:w-64 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20">
+                                <span class="min-w-[40px] flex justify-center">
+                                    <span
+                                        class="material-symbols-outlined text-xl text-white/70 group-hover:text-white transition-colors">mail</span>
+                                </span>
+                                <span
+                                    class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
+                                    info@vsinfratech.com
+                                </span>
+                            </a>
+
+                            <!-- Phone Icon -->
+                            <a href="tel:+919812590727"
+                                class="group flex items-center overflow-hidden bg-white/10 hover:bg-primary rounded-full w-10 h-10 hover:w-48 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20">
+                                <span class="min-w-[40px] flex justify-center">
+                                    <span
+                                        class="material-symbols-outlined text-xl text-white/70 group-hover:text-white transition-colors">call</span>
+                                </span>
+                                <span
+                                    class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
+                                    +91-9812590727
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </footer>
+
+            </div>
+        </div>
+
+        <!-- ======================= MOBILE MENU OVERLAY ======================= -->
+        <div id="mobile-menu"
+            class="fixed inset-0 z-[100] bg-white/95 backdrop-blur-2xl opacity-0 invisible transition-all duration-500 flex flex-col items-center justify-center">
+
+            <!-- Close Button -->
+            <button id="close-menu-btn"
+                class="absolute top-8 right-8 text-[#0d141b] hover:text-primary transition-colors p-2">
+                <span class="material-symbols-outlined text-4xl">close</span>
+            </button>
+
+            <!-- Menu Navigation -->
+            <nav class="flex flex-col gap-12 text-center p-8">
+                <a class="menu-item text-4xl font-extrabold text-[#0d141b]/30 hover:text-primary transition-all duration-300"
+                    href="#" onclick="mobileGoTo('industrial')">PROJECTS</a>
+                <a class="menu-item text-4xl font-extrabold text-[#0d141b]/30 hover:text-primary transition-all duration-300"
+                    href="#" onclick="mobileOpenAbout()">ABOUT US</a>
+                <a class="menu-item text-4xl font-extrabold text-[#0d141b]/30 hover:text-primary transition-all duration-300"
+                    href="/industrial-park/announcements">ANNOUNCEMENTS</a>
+
+                <div class="menu-item flex flex-col gap-4 mt-8">
+                    <p class="text-[10px] uppercase tracking-[0.3em] text-gray-400 font-bold mb-2">Get in touch</p>
+                    <div class="flex justify-center gap-8">
+                        <a href="mailto:info@vsinfratech.com"
+                            class="text-[#0d141b] hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-3xl">mail</span>
+                        </a>
+                        <a href="tel:+919812590727" class="text-[#0d141b] hover:text-primary transition-colors">
+                            <span class="material-symbols-outlined text-3xl">call</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Subtle Branding -->
+            <div class="absolute bottom-12 flex flex-col items-center opacity-20">
+                <img src="/assets/infratech-logo-min.png" alt="VS Infratech" class="h-12 w-auto grayscale">
+            </div>
+        </div>
+
+        <!-- ======================= ABOUT US PAGE (Slide-in Section) ======================= -->
+        <div id="about-page"
+            class="page-view z-40 bg-background-light text-[#0d141b] fixed inset-0 translate-x-full overflow-y-auto">
+
+            <!-- About Header -->
+            <header class="w-full bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30">
+                <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3 text-primary cursor-pointer" onclick="goHome()">
+                        <!-- CHANGED: Replaced H2 Text with IMG -->
+                        <img src="/assets/infratech-logo-min.png" alt="VS Infratech" class="h-16 w-auto">
+                    </div>
+
+                    <nav class="hidden md:flex items-center gap-6">
+                        <a class="text-sm font-medium text-gray-600 hover:text-primary cursor-pointer"
+                            onclick="goHome(); scrollToSection('industrial')">Projects</a>
+                        <a class="text-sm font-bold text-gray-600 hover:text-primary cursor-pointer mr-6"
+                            onclick="goHome(); openAbout()">About Us</a>
+                        <a class="text-sm font-medium text-gray-600 hover:text-primary"
+                            href="/industrial-park/announcements">Announcements</a>
+                    </nav>
+
+                    <!-- Close Button for Mobile (in About Page) -->
+                    <button onclick="goHome()" class="md:hidden p-2 text-gray-800">
+                        <span class="material-symbols-outlined text-3xl">arrow_back</span>
                     </button>
                 </div>
             </header>
 
-            <!-- Main Split View -->
-            <main class="split-container flex-1 flex flex-col lg:flex-row relative w-full h-full overflow-hidden">
-                
-                <!-- Left Pane: Industrial -->
-                <div class="split-pane group relative flex-1 flex flex-col justify-center items-center overflow-hidden border-b-4 lg:border-b-0 lg:border-r-4 border-white/20">
-                    <!-- Background Image -->
-                    <div class="absolute inset-0 bg-cover bg-center bg-image-anim" 
-                         data-alt="Modern large scale industrial warehouse logistics park with solar panels" 
-                         style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBWsLeuqcTSFp-FQkuuPoGZTN2XQY6cI9vuJUsfqV1yRtkHOGPywhr8QE-kg3tVmlXqR_LHrqn8nRcmwQF2sWPr5XxzfE-X8UL8atJW0upGV3CANjmKqTKVP575L9pGvBGJtd2eo4Aoa00CISaQZhp60ve2_--PUSdOAawhvlAUug1bkrTAtE_guK5egE9b3n_FHgVz4CeL5KokK8IgOKQQ_qSirDtN70UF0ORm7XTyzKiT97n8bl1-8KE3iY0hyvE4qxDyuD8OMIc");'>
-                    </div>
-                    
-                    <!-- Gradient Overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent lg:bg-gradient-to-r lg:from-black/90 lg:via-slate-900/40 lg:to-transparent"></div>
-                    
-                    <!-- Content Wrapper -->
-                    <div class="relative z-10 p-8 lg:p-12 max-w-xl text-center w-full flex flex-col items-center">
-                        <div class="min-h-[3.5em] flex items-center justify-center mb-4">
-                            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg">
-                                VS Industrial Park
-                            </h1>
-                        </div>
-                        
-                        <div class="min-h-[4.5rem] flex items-center justify-center mb-8">
-                            <p class="text-lg text-slate-200 font-medium leading-relaxed max-w-md drop-shadow-md">
-                                World-class infrastructure designed to scale your business operations efficiently.
-                            </p>
-                        </div>
-                        
-                        <a href="/industrial-park" class="group/btn relative flex items-center justify-center overflow-hidden rounded-full h-14 px-10 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-blue-600 shadow-xl hover:shadow-2xl hover:-translate-y-1 border border-white/10">
-                            <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:animate-[shimmer_1.5s_infinite]"></span>
-                            <span class="relative z-10 flex items-center gap-2">
-                                Explore Industrial 
-                                <span class="material-symbols-outlined text-lg transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
-                            </span>
-                        </a>
-                    </div>
-                </div>
+            <!-- About Content -->
+            <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-12">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
-                <!-- Right Pane: Residential -->
-                <div class="split-pane group relative flex-1 flex flex-col justify-center items-center overflow-hidden">
-                    <!-- Background Image -->
-                    <div class="absolute inset-0 bg-cover bg-center bg-image-anim" 
-                         data-alt="Luxury high rise apartment building exterior with modern glass architecture at sunset" 
-                         style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDiX_ME1eV27TD-FNDO76f7DO4IWsptOeBTcxed1subGTdiZSInM2_xbTsR3nGKwmsRi4MHAcMRwnj-pdcn59X-8yE_jECT1YVW3Nvdi0l2CgVnW9fJcR3Ad_ZrClenjxQv1F-bOzKz0YsITOb-L_9u6TYQq_U9z1YwtFQZ58eefryfA03hDWFq5ual1QQQIMH5gyw-FEcDXHCFsWym8xX88AlpeDIjQSLHv7nlxNv_dFysgSe_SXChSjUtKroWfNfnJl1dndwPvlo");'>
-                    </div>
-                    
-                    <!-- Gradient Overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent lg:bg-gradient-to-l lg:from-black/90 lg:via-slate-900/40 lg:to-transparent"></div>
-                    
-                    <!-- Content Wrapper -->
-                    <div class="relative z-10 p-8 lg:p-12 max-w-xl text-center w-full flex flex-col items-center">
-                        <div class="min-h-[3.5em] flex items-center justify-center mb-4">
-                            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg">
-                                VS Residency
-                            </h1>
-                        </div>
-                        <br>
-                        
-                        <div class="min-h-[4.5rem] flex items-center justify-center mb-8">
-                            <p class="text-lg text-slate-200 font-medium leading-relaxed max-w-md drop-shadow-md">
-                                Living redefined. A perfect blend of comfort, luxury, and modern community living.
-                            </p>
-                        </div>
-                        
-                        <a href="/residency/" class="group/btn relative flex items-center justify-center overflow-hidden rounded-full h-14 px-10 bg-white text-[#0d141b] text-base font-bold leading-normal tracking-[0.015em] transition-all hover:bg-slate-100 shadow-xl hover:shadow-2xl hover:-translate-y-1">
-                            <span class="relative z-10 flex items-center gap-2">
-                                Explore Residential
-                                <span class="material-symbols-outlined text-lg transition-transform group-hover/btn:translate-x-1">arrow_forward</span>
-                            </span>
-                        </a>
-                    </div>
-                </div>
+                    <div class="space-y-8 animate-fade-in">
+                        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">Building with
+                            Purpose, <br><span class="text-primary">Creating Enduring Value.</span></h1>
 
+                        <p class="text-lg text-gray-600 leading-relaxed">
+                            VS Infratech develops well planned, compliant, and future ready land developments that
+                            support sustainable economic and community growth. <br><br>
+                            Our integrated projects, <b>VS Industrial Park</b> and <b>VS Residency</b>, span over 35
+                            acres of connected land in Hansi. Designed as a unified ecosystem, they enable businesses to
+                            operate efficiently while allowing families to build homes close to opportunity. <br><br>
+                            VS Industrial Park was created to address the shortage of approved industrial and commercial
+                            spaces in the city. With gated access, wide internal roads, organized plots, and essential
+                            infrastructure, it offers entrepreneurs a structured environment to start and grow their
+                            businesses with confidence. <br><br>
+                            Alongside it, VS Residency provides a thoughtfully planned residential township, creating a
+                            balanced live work ecosystem. Both developments are strategically located just 500 meters
+                            from NH9, ensuring strong connectivity. <br><br>
+                            The name VS is derived from <b>VeerBhan Uthra</b> and <b>Shiv Dayal Bhatia</b>, reflecting
+                            the values of integrity, responsibility, and long term thinking that guide every development
+                            at VS Infratech.
+                        </p>
+                    </div>
+
+                    <div class="relative h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl animate-fade-in"
+                        style="animation-delay: 0.2s;">
+                        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop"
+                            alt="Modern Architecture" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                            <p class="text-white text-lg md:text-xl font-bold">"Design is not just what it looks like
+                                and feels like. Design is how it works."</p>
+                        </div>
+                    </div>
+
+                </div>
             </main>
 
-            <!-- Footer -->
-            <footer class="absolute bottom-0 w-full z-50 py-6 px-6 lg:px-10 pointer-events-none bg-gradient-to-t from-black/80 to-transparent">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-white/70 text-xs font-medium pointer-events-auto">
-                    <p>© 2024 VS Infratech. All rights reserved.</p>
-                    
-                    <div class="flex gap-2 items-center">
-                        
-                        <!-- Share Icon (Standard)
-                        <a class="hover:text-primary hover:bg-white/10 transition-all flex items-center justify-center p-2 rounded-full" href="#" aria-label="Share">
-                            <span class="material-symbols-outlined text-xl">share</span>
-                        </a> -->
-                        
-                        <!-- Mail Icon (Expandable) -->
-                        <a href="#" class="group flex items-center overflow-hidden bg-white/10 hover:bg-primary rounded-full w-10 h-10 hover:w-64 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20" aria-label="Email">
-                            <!-- Fixed width container for icon to keep it centered when small -->
+            <!-- About Footer -->
+            <footer class="w-full bg-white border-t border-gray-200 py-8">
+                <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-500 text-sm">© 2024 VS Infratech. All rights reserved.</p>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="goHome()"
+                            class="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors text-sm font-bold px-4 py-2 rounded-lg hover:bg-gray-50">
+                            <span class="material-symbols-outlined text-lg">arrow_back</span>
+                            Back to Home
+                        </button>
+
+                        <a href="mailto:info@vsinfratech.com"
+                            class="group flex items-center overflow-hidden bg-gray-100 hover:bg-primary rounded-full w-10 h-10 hover:w-64 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20">
                             <span class="min-w-[40px] flex justify-center">
-                                <span class="material-symbols-outlined text-xl text-white/70 group-hover:text-white transition-colors">mail</span>
+                                <span
+                                    class="material-symbols-outlined text-xl text-gray-600 group-hover:text-white transition-colors">mail</span>
                             </span>
-                            <span class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
-                                enquiry@vsinfratech.co.in
+                            <span
+                                class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
+                                info@vsinfratech.com
                             </span>
                         </a>
 
-                        <!-- Phone Icon (Expandable) -->
-                        <a href="#" class="group flex items-center overflow-hidden bg-white/10 hover:bg-primary rounded-full w-10 h-10 hover:w-48 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20" aria-label="Call">
+                        <a href="tel:+919812590727"
+                            class="group flex items-center overflow-hidden bg-gray-100 hover:bg-primary rounded-full w-10 h-10 hover:w-48 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20">
                             <span class="min-w-[40px] flex justify-center">
-                                <span class="material-symbols-outlined text-xl text-white/70 group-hover:text-white transition-colors">call</span>
+                                <span
+                                    class="material-symbols-outlined text-xl text-gray-600 group-hover:text-white transition-colors">call</span>
                             </span>
-                            <span class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
+                            <span
+                                class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
                                 +91-9812590727
                             </span>
                         </a>
@@ -230,129 +525,101 @@
             </footer>
 
         </div>
-    </div>
-
-    <!-- ABOUT US PAGE (Slide-in Section) -->
-    <!-- Initial state: translate-x-full slides it off to the right -->
-    <div id="about-page" class="page-view z-20 bg-background-light text-[#0d141b] translate-x-full flex flex-col">
-        
-        <!-- About Header -->
-        <header class="w-full bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                <div class="flex items-center gap-3 text-primary cursor-pointer" onclick="goHome()">
-                    <!-- CHANGED: Replaced H2 Text with IMG -->
-                    <img src="/assets/infratech-logo-min.png" alt="VS Infratech" class="h-16 w-auto">
-                </div>
-
-                <nav class="hidden md:flex items-center gap-6">
-                    <!-- <a class="text-sm font-medium text-gray-600 hover:text-primary" href="#" onclick="goHome()">Home</a> -->
-                    <a class="text-sm font-medium text-gray-600 hover:text-primary" href="#" onclick="goHome()">Projects</a>
-                    <a class="text-sm font-bold text-primary" href="#">About Us</a>
-                    <!-- <a class="text-sm font-medium text-gray-600 hover:text-primary" href="#">Contact</a> -->
-                </nav>
-            </div>
-        </header>
-
-        <!-- About Content -->
-        <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-                
-                <div class="space-y-8">
-                    <h1 class="text-5xl font-extrabold text-gray-900 leading-tight">Building with Purpose, <br><span class="text-primary">Creating Enduring Value.</span></h1>
-                    
-                    <p class="text-lg text-gray-600 leading-relaxed">
-                        VS Infratech develops well planned, compliant, and future ready land developments that support sustainable economic and community growth. <br>
-Our integrated projects, <b>VS Industrial Park</b> and <b>VS Residency</b>, span over 35 acres of connected land in Hansi. Designed as a unified ecosystem, they enable businesses to operate efficiently while allowing families to build homes close to opportunity. <br>
-VS Industrial Park was created to address the shortage of approved industrial and commercial spaces in the city. With gated access, wide internal roads, organized plots, and essential infrastructure, it offers entrepreneurs a structured environment to start and grow their businesses with confidence. <br>
-Alongside it, VS Residency provides a thoughtfully planned residential township, creating a balanced live work ecosystem. Both developments are strategically located just 500 meters from NH9, ensuring strong connectivity. <br>
-The name VS is derived from <b>VeerBhan Uthra</b> and <b>Shiv Dayal Bhatia</b>, reflecting the values of integrity, responsibility, and long term thinking that guide every development at VS Infratech.
-                    </p>
-                
-
-                    <!-- <div class="grid grid-cols-2 gap-6 pt-4">
-                        <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-                            <span class="text-4xl font-extrabold text-primary block mb-1">50+</span>
-                            <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Projects Completed</span>
-                        </div>
-                        <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-100">
-                            <span class="text-4xl font-extrabold text-primary block mb-1">12</span>
-                            <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Years Experience</span>
-                        </div>
-                    </div> -->
-                </div>
-
-                <div class="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl">
-                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop" alt="Modern Architecture" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-                        <p class="text-white text-xl font-bold">"Design is not just what it looks like and feels like. Design is how it works."</p>
-                    </div>
-                </div>
-
-            </div>
-        </main>
-
-        <!-- About Footer -->
-        <footer class="w-full bg-white border-t border-gray-200 py-8">
-            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-gray-500 text-sm">© 2024 VS Infratech. All rights reserved.</p>
-                
-                <div class="flex items-center gap-2">
-                    
-                    <button onclick="goHome()" class="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors text-sm font-bold px-4 py-2 rounded-lg hover:bg-gray-50">
-                        <span class="material-symbols-outlined text-lg">arrow_back</span>
-                        Back to Home
-                    </button>
-
-                    <!-- Repeated Expandable Icons for About Page -->
-                    <a href="#" class="group flex items-center overflow-hidden bg-gray-100 hover:bg-primary rounded-full w-10 h-10 hover:w-64 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20">
-                        <span class="min-w-[40px] flex justify-center">
-                            <span class="material-symbols-outlined text-xl text-gray-600 group-hover:text-white transition-colors">mail</span>
-                        </span>
-                        <span class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
-                            enquiry@vsinfratech.co.in
-                        </span>
-                    </a>
-
-                    <a href="#" class="group flex items-center overflow-hidden bg-gray-100 hover:bg-primary rounded-full w-10 h-10 hover:w-48 transition-all duration-300 ease-in-out border border-transparent hover:border-white/20">
-                        <span class="min-w-[40px] flex justify-center">
-                            <span class="material-symbols-outlined text-xl text-gray-600 group-hover:text-white transition-colors">call</span>
-                        </span>
-                        <span class="text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pl-2">
-                            +91-9812590727
-                        </span>
-                    </a>
-
-                </div>
-            </div>
-        </footer>
 
     </div>
 
-</div>
+    <script>
+        // --- Navigation & Page State Logic ---
 
-<script>
-    // DOM Elements
-    const aboutBtn = document.getElementById('nav-about');
-    const aboutPage = document.getElementById('about-page');
-    
-    // Function to Open About Page (Slide Right)
-    function openAbout(e) {
-        if(e) e.preventDefault();
-        // Add the class that slides the page in (translate-x-0)
-        aboutPage.classList.remove('translate-x-full');
-    }
+        const aboutBtn = document.getElementById('nav-about');
+        const aboutPage = document.getElementById('about-page');
+        const homePage = document.getElementById('home-page');
+        const mobileMenuBtn = document.getElementById('menu-btn');
+        const mobileMenuCloseBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const body = document.body;
 
-    // Function to Close About Page (Slide Back)
-    function goHome() {
-        // Add the class that slides the page out (translate-x-full)
-        aboutPage.classList.add('translate-x-full');
-    }
+        // 1. About Page Transition
+        function openAbout(e) {
+            if (e) e.preventDefault();
+            aboutPage.classList.remove('translate-x-full');
 
-    // Event Listeners
-    if (aboutBtn) {
-        aboutBtn.addEventListener('click', openAbout);
-    }
-</script>
+            // If mobile, ensure background doesn't scroll
+            if (window.innerWidth < 1024) {
+                body.classList.add('overflow-hidden');
+            }
+        }
+
+        function goHome() {
+            aboutPage.classList.add('translate-x-full');
+
+            // Unlock body scroll after transition
+            setTimeout(() => {
+                body.classList.remove('overflow-hidden');
+            }, 500);
+        }
+
+        if (aboutBtn) {
+            aboutBtn.addEventListener('click', openAbout);
+        }
+
+        // 2. Mobile Menu Logic
+        function toggleMobileMenu(show) {
+            if (show) {
+                mobileMenu.classList.remove('opacity-0', 'invisible');
+                mobileMenu.classList.add('opacity-100', 'visible');
+                body.classList.add('overflow-hidden');
+            } else {
+                mobileMenu.classList.add('opacity-0', 'invisible');
+                mobileMenu.classList.remove('opacity-100', 'visible');
+                // Only unlock body if we're not on the About Page
+                if (aboutPage.classList.contains('translate-x-full')) {
+                    body.classList.remove('overflow-hidden');
+                }
+            }
+        }
+
+        mobileMenuBtn.addEventListener('click', () => toggleMobileMenu(true));
+        mobileMenuCloseBtn.addEventListener('click', () => toggleMobileMenu(false));
+
+        // 3. Mobile Menu Interactions
+        function mobileGoTo(sectionId) {
+            // Ensure any open About Page is closed first
+            goHome();
+            toggleMobileMenu(false);
+
+            setTimeout(() => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 400);
+        }
+
+        function mobileOpenAbout() {
+            toggleMobileMenu(false);
+            // Delay slightly for visual smoothness
+            setTimeout(() => {
+                openAbout();
+            }, 300);
+        }
+
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // --- Utility: Email Decoder (Optional, usually handled by Cloudflare) ---
+        // Keeping logic present just in case specific emails needed decoding
+        document.querySelectorAll('.__cf_email__').forEach(el => {
+            // Placeholder for actual cloudflare decode if needed
+            el.style.display = 'inline';
+        });
+
+    </script>
 
 </body>
+
 </html>
