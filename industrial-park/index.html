@@ -684,6 +684,12 @@
             display: none !important;
         }
 
+        /* Prevent phone numbers from appearing blue on mobile */
+        a[href^="tel"] {
+            color: inherit;
+            text-decoration: none;
+        }
+
         @media (max-width: 968px) {
             .desktop-only {
                 display: none !important;
@@ -941,10 +947,13 @@
                     High-yield potential with ready infrastructure.</p>
                 <br>
                 <h2>Contact Us</h2>
-                <p style="">+91-9812053400</p>
-                <p style="">+91-9812590727</p>
+                <p style="color: var(--text-main);"><a href="tel:+919812053400"
+                        style="color: inherit; text-decoration: none;">+91-9812053400</a></p>
+                <p style="color: var(--text-main);"><a href="tel:+919812590727"
+                        style="color: inherit; text-decoration: none;">+91-9812590727</a></p>
 
-                <p style="">enquiry@vsinfratech.co.in</p>
+                <p style="color: var(--text-main);"><a href="mailto:enquiry@vsinfratech.co.in"
+                        style="color: inherit; text-decoration: none;">enquiry@vsinfratech.co.in</a></p>
             </div>
             <div class="form-box relief-outset reveal">
                 <!-- UPDATED FORM START -->
