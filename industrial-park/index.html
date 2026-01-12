@@ -1038,6 +1038,15 @@
             [29.094047563739547, 75.95318707411786]  // End
         ];
 
+        // NH9 Highway Waypoints for blinking markers
+        const nh9Waypoints = [
+            [29.09715997520698, 75.91818248852852],
+            [29.09721235551893, 75.92461205074105],
+            [29.09957543050927, 75.92729076539993],
+            [29.102656888611243, 75.92922432200871],
+            [29.10643421507236, 75.92995663252321]
+        ];
+
         const latSum = projectCoords.reduce((sum, coord) => sum + coord[0], 0);
         const lngSum = projectCoords.reduce((sum, coord) => sum + coord[1], 0);
         const projectCenter = [latSum / 4, lngSum / 4];
@@ -1084,13 +1093,7 @@
         }).addTo(map);
 
         // --- 2. NH9 HIGHWAY LAYER ---
-        // Default style: Dashed Red Line
-        const nh9Highway = L.polyline(nh9Coords, {
-            color: '#e74c3c', // Reddish color for visibility
-            weight: 4,
-            opacity: 0.7,
-            dashArray: '5, 10' // Dashed line to indicate road
-        }).addTo(map);
+        // Highway line removed - only showing waypoint markers on hover
 
         // --- 3. RAILWAY MARKERS ---
         const railwayNormalIcon = createTechLabel('HANSI RAILWAY STATION', false);
@@ -1122,25 +1125,39 @@
 
         // --- INTERACTION LOGIC ---
 
+        // Store NH9 waypoint markers
+        let nh9WaypointMarkers = [];
+
         // Helper: Reset Highway Style
         function resetNH9() {
-            nh9Highway.setStyle({
-                color: '#e74c3c',
-                weight: 4,
-                opacity: 0.7,
-                dashArray: '5, 10'
-            });
+            // Remove waypoint markers
+            nh9WaypointMarkers.forEach(marker => map.removeLayer(marker));
+            nh9WaypointMarkers = [];
         }
 
         // Helper: Highlight Highway Style
         function highlightNH9() {
-            nh9Highway.setStyle({
-                color: '#2d3436', // Match theme accent
-                weight: 8,
-                opacity: 1,
-                dashArray: null // Solid line
+            // Add blinking markers at waypoints
+            nh9Waypoints.forEach(coords => {
+                const waypointIcon = L.divIcon({
+                    className: 'custom-label',
+                    html: `<div class="map-dot-wrapper is-highlight">
+                        <div class="map-dot-container">
+                            <div class="map-dot-ring"></div>
+                            <div class="map-dot-core"></div>
+                        </div>
+                    </div>`,
+                    iconSize: [12, 12],
+                    iconAnchor: [6, 6]
+                });
+
+                const marker = L.marker(coords, {
+                    icon: waypointIcon,
+                    interactive: false
+                }).addTo(map);
+
+                nh9WaypointMarkers.push(marker);
             });
-            nh9Highway.bringToFront(); // Ensure it sits on top
         }
 
         // Define the reset function to return map to original state
@@ -1170,8 +1187,10 @@
         const listNH9 = document.getElementById('loc-nh9');
         listNH9.addEventListener('mouseenter', () => {
             highlightNH9();
-            // Zoom to fit the highway with some padding
-            map.flyToBounds(nh9Highway.getBounds(), { padding: [100, 100], duration: 1.5 });
+            // Create a bounds that includes both the highway and waypoints
+            const allNH9Points = [...nh9Coords, ...nh9Waypoints];
+            const nh9Bounds = L.latLngBounds(allNH9Points);
+            map.flyToBounds(nh9Bounds, { padding: [70, 70], duration: 1.5 });
         });
 
         // 2. Railway Interaction
@@ -1199,13 +1218,12 @@
         });
 
 
-        // Initial View: Fit to Project, Railway, Bus, and NH9 Highway
+        // Initial View: Fit to Project, Railway, and Bus
         const group = new L.featureGroup([
             plotPolygon,
             L.marker(projectCenter),
             L.marker(railwayCoords),
-            L.marker(busStandCoords),
-            nh9Highway // Include highway in initial view
+            L.marker(busStandCoords)
         ]);
 
         map.fitBounds(group.getBounds(), { padding: [40, 40] });
